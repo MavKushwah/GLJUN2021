@@ -8,7 +8,6 @@
 # @author Anirudh Kushwah
 # @since 2022.05
 #
-import uuid
 
 from utils import *
 

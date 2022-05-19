@@ -21,7 +21,7 @@ Parameters:
     Type: String
   MqttPublicIp:
     Type: String
-  CommonLambdaRole:
+  CommonLambdaRoleArn:
     Type: String
 
 Resources:
@@ -48,7 +48,7 @@ Resources:
         Handler: 'register.handler'
         MemorySize: 128
         Timeout: 10
-        Role: !Ref CommonLambdaRole
+        Role: !Ref CommonLambdaRoleArn
         Layers:
           - !Ref LambdaLayer
         Code:
@@ -71,7 +71,7 @@ Resources:
       Handler: 'login.handler'
       MemorySize: 128
       Timeout: 10
-      Role: !Ref CommonLambdaRole
+      Role: !Ref CommonLambdaRoleArn
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
@@ -97,7 +97,7 @@ Resources:
       Handler: 'logoff.handler'
       MemorySize: 128
       Timeout: 10
-      Role: !Ref CommonLambdaRole
+      Role: !Ref CommonLambdaRoleArn
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
@@ -123,7 +123,7 @@ Resources:
       Handler: 'find_taxi.handler'
       MemorySize: 128
       Timeout: 10
-      Role: !Ref CommonLambdaRole
+      Role: !Ref CommonLambdaRoleArn
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
@@ -139,7 +139,7 @@ Resources:
       Handler: 'cleanup.handler'
       MemorySize: 128
       Timeout: 10
-      Role: !Ref CommonLambdaRole
+      Role: !Ref CommonLambdaRoleArn
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
@@ -155,7 +155,7 @@ Resources:
       Handler: 'location.handler'
       MemorySize: 128
       Timeout: 10
-      Role: !Ref CommonLambdaRole
+      Role: !Ref CommonLambdaRoleArn
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"

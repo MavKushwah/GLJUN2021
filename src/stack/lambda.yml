@@ -157,9 +157,19 @@ Resources:
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
+      Layers:
+        - !Ref LambdaLayer
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
       Environment:
         Variables:
           NAMESPACE: !Ref Namespace
+          SSM_MONGO_URI: !Ref MongoUriSsmParameterName
+          MQTT_PUBLIC_IP: !Ref MqttPublicIp
+          MQTT_PRIVATE_IP: !Ref MqttPrivateIp
 
 Outputs:
 

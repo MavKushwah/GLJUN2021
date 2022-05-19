@@ -58,3 +58,8 @@ class DatabaseDriver:
         db = self.client[self.db_name]
         # @TODO insert new user record here, return Id
         return ""
+
+    def clear_all_data(self) -> str:
+        db = self.client[self.db_name]
+        # @TODO purge all collections so that database becomes empty
+        return ""

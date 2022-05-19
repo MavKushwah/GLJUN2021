@@ -8,9 +8,11 @@
 # @author Anirudh Kushwah
 # @since 2022.05
 #
-from utils import respond
+from utils import *
 
 
 def handler(event, context):
-    print(event)
-    return respond(200, "hello world", {})
+    # purge
+    print('purging all data in database')
+    get_db_driver().clear_all_data()
+    return respond(200, "some people just want the world to burn! data has been nuked.", {})

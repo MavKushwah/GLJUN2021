@@ -8,42 +8,7 @@ Parameters:
 
 Resources:
 
-  LoginLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-        - "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
-      Policies:
-        - PolicyName: "GeneralPermissions"
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ssm:Get*"
-                  - "ssm:List*"
-                  - "ec2:DescribeSecurityGroups"
-                  - "ec2:DescribeSubnets"
-                  - "ec2:DescribeVpcs"
-                Resource: '*'
-      RoleName: !Sub "${Namespace}-Login-Lambda-Role"
-      Tags:
-        - Key: Namespace
-          Value: !Sub "${Namespace}"
-
-  LogoffLambdaRole:
+  CommonLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -72,103 +37,11 @@ Resources:
                   - "ec2:DescribeSubnets"
                   - "ec2:DescribeVpcs"
                 Resource: '*'
-      RoleName: !Sub "${Namespace}-Logoff-Lambda-Role"
+      RoleName: !Sub "${Namespace}-Common-Lambda-Role"
       Tags:
         - Key: Namespace
           Value: !Sub "${Namespace}"
 
-  FindTaxiLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-      RoleName: !Sub "${Namespace}-FindTaxi-Lambda-Role"
-      Tags:
-        - Key: Namespace
-          Value: !Sub "${Namespace}"
-
-  CleanupLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-      RoleName: !Sub "${Namespace}-Cleanup-Lambda-Role"
-      Tags:
-        - Key: Namespace
-          Value: !Sub "${Namespace}"
-
-  RegisterLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-      RoleName: !Sub "${Namespace}-Register-Lambda-Role"
-      Tags:
-        - Key: Namespace
-          Value: !Sub "${Namespace}"
-  LocationLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-      Policies:
-        - PolicyName: "GeneralPermissions"
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ssm:Get*"
-                  - "ssm:List*"
-                  - "ec2:DescribeSecurityGroups"
-                  - "ec2:DescribeSubnets"
-                  - "ec2:DescribeVpcs"
-                Resource: '*'
-      RoleName: !Sub "${Namespace}-Location-Lambda-Role"
-      Tags:
-        - Key: Namespace
-          Value: !Sub "${Namespace}"
+Outputs:
+  CommonLambdaRoleArn:
+    Value: !GetAtt CommonLambdaRole.Arn

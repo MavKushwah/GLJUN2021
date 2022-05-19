@@ -36,8 +36,6 @@ Resources:
 
   LambdaStack:
     Type: "AWS::CloudFormation::Stack"
-    DependsOn:
-      - SecurityStack
     Properties:
       TemplateURL: !Sub 'https://${Bucket}.s3.amazonaws.com/build/${Namespace}/${BuildStamp}/stack/lambda.yml'
       Parameters:
@@ -49,6 +47,7 @@ Resources:
         MongoUriSsmParameterName: !Ref MongoUriSsmParameterName
         MqttPublicIp: !Ref MqttSsmPublicIp
         MqttPrivateIp: !Ref MqttSsmPrivateIp
+        CommonLambdaRoleArn: !GetAtt SecurityStack.Outputs.CommonLambdaRoleArn
 
   ApiStack:
     Type: "AWS::CloudFormation::Stack"

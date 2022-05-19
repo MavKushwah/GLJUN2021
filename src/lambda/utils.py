@@ -18,6 +18,7 @@ import socket
 import boto3
 
 from database_driver import DatabaseDriver
+from jwthelper import JwtHelper
 from mqtthelper import MqttClient
 
 # Global Mqtt Client
@@ -58,11 +59,10 @@ def get_token(event):
     return event['headers']['X-Token']
 
 
-def validate_taxi_id(event) -> bool:
+def validate_token(event, identity: str, secret: str) -> bool:
     """ validates if a request originated from a certain taxi."""
-    taxi_id = get_taxi_id(event)
     token = get_token(event)
-    return taxi_id == token
+    return JwtHelper(secret=secret).validate_jwt(identity=identity, token=token)
 
 
 def get_namespace() -> str:

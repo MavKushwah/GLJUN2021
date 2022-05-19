@@ -10,14 +10,10 @@
 #
 import uuid
 
-from database_driver import DatabaseDriver
-from mqtthelper import MqttClient
 from utils import *
 
 
 def handler(event, context):
-    if not validate_taxi_id(event):
-        respond(401, "unauthorized", {})
     # Get Taxi Id
     taxi_id = get_taxi_id(event)
     # create database helper
@@ -26,7 +22,9 @@ def handler(event, context):
     # if no taxi found, return 401
     if not existing_taxi:
         return respond(401, "unauthorized", {})
-
+    # validate jwt
+    if not validate_token(event, identity=taxi_id, secret=existing_taxi['secret']):
+        respond(401, "unauthorized", {})
     # create uuid for the taxi to subscribe to
     taxi_uuid = str(uuid.uuid4())
     # patch

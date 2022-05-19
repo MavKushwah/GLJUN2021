@@ -5,8 +5,7 @@ init: check-env prepare-build
 	@echo "initializing workspace"
 	aws s3api create-bucket --bucket $(BUCKET) --region us-east-1 --acl public-read --object-ownership BucketOwnerPreferred
 
-	aws cloudformation deploy --template-file src/stack/base.yml --stack-name $(GLNAME)-base \
-		--parameter-overrides Bucket=$(BUCKET) Namespace=$(GLNAME) BuildStamp=$(BUILD_STAMP) \
+	aws cloudformation deploy --template-file src/stack/base.yml --stack-name base-stack \
 		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
 build: check-env prepare-build

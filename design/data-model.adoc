@@ -115,7 +115,13 @@ Request: POST /login | POST /logoff
 Header:
  Token: <JWT>
 
-Response: 200 OK
+Response: JSON
+{
+    "taxi_uuid": "string",
+    "host": "mqtt host to subscribe"
+}
+Headers:
+ X-Taxi-Id: <taxi_id>
 ----
 
 

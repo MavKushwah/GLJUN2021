@@ -1,2 +1,4 @@
 pymongo
 boto3
+paho-mqtt
+

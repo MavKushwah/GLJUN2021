@@ -1,20 +1,62 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Stack to create Api gateway
-Parameters:
-  Namespace:
-    Type: String
-    Description: Namespace for resources
-  Bucket:
-    Type: String
-    Description: Containing source files
-  BuildStamp:
-    Type: String
-    Description: String to be used to create artifacts
 Resources:
 
   MongoUriParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${Namespace}/mongo-uri"
+      Name: "/mongo-uri"
       Type: String
       Value: "test-value"
+
+  MqttEc2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: allow connections for mqtt broker
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 1883
+        ToPort: 1884
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "mqtt-server"
+
+  MqttEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-0b0ea68c435eb488d'
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !Ref MqttEc2SecurityGroup
+      UserData:
+        'Fn::Base64': |
+          #!/bin/bash -x
+          sudo apt-get update
+          sudo apt-get -y install mosquitto mosquitto-clients
+      Tags:
+        - Key: Name
+          Value: "mqtt-server"
+  MqttPublicIpParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/mqtt-host-public"
+      Type: String
+      Value: !GetAtt MqttEc2Instance.PublicIp
+
+  MqttPrivateIpParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/mqtt-host-private"
+      Type: String
+      Value: !GetAtt MqttEc2Instance.PrivateIp
+
+Outputs:
+  DriverPublicIp:
+    Value: !GetAtt MqttEc2Instance.PublicIp
+  DriverPrivateIp:
+    Value: !GetAtt MqttEc2Instance.PrivateIp

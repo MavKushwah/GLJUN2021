@@ -94,29 +94,20 @@ getting pickup requests from system. The flow goes like below;
 
 1. Taxi makes a `POST /login` call with below structure;
   - `taxi_id` as a Header
-  - `jwt` as a Header
-  - JSON Payload as the formulated JWT Payload
-  ``
-   {
-     "taxi_id": "<string:id>",
-     "expiry": <int:epoch>,
-     "nonce": "<string:random>"
-   }
-  ``
-2. Request is received by API Gateway endpoint and is validated by an authentication lambda. Then it is routed to a
-   Login Lambda
+  - Security token as header `X-Token`
+2. Request is received by API Gateway endpoint. Then it is routed to Login Lambda
 3. Login Lambda validates the current status and updates the status data marking the taxi as available for new requests.
-   It then proceeds to create a Topic in format `topic/taxi-<id>` to enable one-to-one communication between server
-   and taxi
+   A random `uuid` is assigned to the taxi which marks the _topic name_ till taxi logs off. This _uuid_ is stored in DB.
+   _uuid_ and _mqtt host_ is then sent to taxi so that it can listen to the topic for new requests.
 4. Okay response is sent back to Taxi indicating a successful login for taxi
-5. Taxi client then subscribes to an exclusive topic `topic/taxi-<id>` to enable exclusive communication channel
+5. Taxi client then subscribes to an exclusive topic `taxi/<uuid>` to enable exclusive communication channel
 6. Taxi client then starts publishing periodic location messages onto the topic `topic/taxi-location`
 7. Location messages are served by a Location Lambda. A SQS Queue invokes Lambda for batches of MQTT messages. This
    lambda first verifies that the Taxi is still logged in using status data
 8. If it is online, the current location is written into the _Geo Spatial Data_
 
 Once taxi wants to stop serving request, a `/logoff` Api call is made which is routed to same Login Lambda. Once the
-request is validated, the taxi entry is removed from _status data_ and exlusive topic `topic/taxi-<id>` is deleted. Any
+request is validated, the taxi entry is removed from _status data_ and exlusive topic `taxi/<uuid>` is deleted. Any
 further location updates will be then discarded.
 
 
@@ -145,7 +136,7 @@ taxi from system. The flow goes like below;
 2. Request is received by API Gateway endpoint and is validated by an authentication lambda. Then it is routed to a
    Taxi Request Lambda
 3. Lambda validates the location and fires `nearest K` query on _Geo Spatial Data_ which outputs upto `K` taxi `Id`
-4. Lambda then sends a pickup request to all nearest taxis via `taxi-<id>` topics
+4. Lambda then sends a pickup request to all nearest taxis via `taxi/<uuid>` topics
 5. The first positive response from the taxi is considered as a valid selection
 6. When the accepting confirmation arrives within time limit, taxi can be assigned the trip
 7. Taxi status is updated with the trip in progress flag and trip id

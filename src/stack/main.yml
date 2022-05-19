@@ -15,6 +15,15 @@ Parameters:
     Type: String
   LambdaSecurityGroup:
     Type: String
+  MongoUriSsmParameterName:
+    Type: String
+    Default: "/mongo-uri"
+  MqttSsmPublicIp:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/mqtt-host-public"
+  MqttSsmPrivateIp:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/mqtt-host-private"
 
 Resources:
 
@@ -37,6 +46,9 @@ Resources:
         BuildStamp: !Ref BuildStamp
         DbSubnetId: !Ref DbSubnetId
         LambdaSecurityGroup: !Ref LambdaSecurityGroup
+        MongoUriSsmParameterName: !Ref MongoUriSsmParameterName
+        MqttPublicIp: !Ref MqttSsmPublicIp
+        MqttPrivateIp: !Ref MqttSsmPrivateIp
 
   ApiStack:
     Type: "AWS::CloudFormation::Stack"
@@ -58,12 +70,3 @@ Resources:
       Parameters:
         Namespace: !Ref Namespace
         LocationLambdaArn: !GetAtt LambdaStack.Outputs.LocationLambdaArn
-
-  DriverStack:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Sub 'https://${Bucket}.s3.amazonaws.com/build/${Namespace}/${BuildStamp}/stack/driver.yml'
-      Parameters:
-        Namespace: !Ref Namespace
-        Bucket: !Ref Bucket
-        TaxiLocationTopicArn: !GetAtt SnsStack.Outputs.TaxiLocationTopicArn

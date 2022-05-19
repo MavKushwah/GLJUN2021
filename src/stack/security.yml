@@ -24,8 +24,9 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
       Policies:
-        - PolicyName: "ReadSSMParameter"
+        - PolicyName: "GeneralPermissions"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -33,6 +34,9 @@ Resources:
                 Action:
                   - "ssm:Get*"
                   - "ssm:List*"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVpcs"
                 Resource: '*'
       RoleName: !Sub "${Namespace}-Login-Lambda-Role"
       Tags:

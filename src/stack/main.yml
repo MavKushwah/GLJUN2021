@@ -59,6 +59,7 @@ Resources:
         LoginLambdaArn: !GetAtt LambdaStack.Outputs.LoginLambdaArn
         LogoffLambdaArn: !GetAtt LambdaStack.Outputs.LogoffLambdaArn
         RegisterLambdaArn: !GetAtt LambdaStack.Outputs.RegisterLambdaArn
+        LocationLambdaArn: !GetAtt LambdaStack.Outputs.LocationLambdaArn
         FindTaxiLambdaArn: !GetAtt LambdaStack.Outputs.FindTaxiLambdaArn
         CleanupLambdaArn: !GetAtt LambdaStack.Outputs.CleanupLambdaArn
         ApiGatewayStageName: 'v1'

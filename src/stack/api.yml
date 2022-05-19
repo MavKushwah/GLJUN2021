@@ -10,6 +10,8 @@ Parameters:
     Type: String
   RegisterLambdaArn:
     Type: String
+  LocationLambdaArn:
+    Type: String
   FindTaxiLambdaArn:
     Type: String
   CleanupLambdaArn:
@@ -84,6 +86,25 @@ Resources:
       ResourceId: !Ref LogoffProxyResource
       RestApiId: !Ref RestApiGateway
 
+  LocationProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: 'location'
+
+  ApiGatewayLocationMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: 'POST'
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LocationLambdaArn}/invocations
+      ResourceId: !Ref LocationProxyResource
+      RestApiId: !Ref RestApiGateway
+
   FindTaxiProxyResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
@@ -153,6 +174,14 @@ Resources:
       FunctionName: !Ref LogoffLambdaArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/logoff
+
+  LocationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LocationLambdaArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/location
 
   FindTaxiLambdaPermission:
     Type: AWS::Lambda::Permission

@@ -114,3 +114,13 @@ def get_db_driver() -> DatabaseDriver:
         # create database helper
         _db_driver = DatabaseDriver(db_url=mongo_uri, db_name=get_database_name())
     return _db_driver
+
+
+def is_valid_location(latitude, longitude) -> bool:
+    if not isinstance(latitude, (float, int)) or not isinstance(longitude, (float, int)):
+        return False
+    if latitude > 90.0 or latitude < -90.0:
+        return False
+    if longitude > 180.0 or longitude < -180.0:
+        return False
+    return True

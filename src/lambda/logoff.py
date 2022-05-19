@@ -25,7 +25,7 @@ def handler(event, context):
     # validate jwt
     if not validate_token(event, identity=taxi_id, secret=existing_taxi['secret']):
         respond(401, "unauthorized", {})
-    existing_taxi_uuid = existing_taxi['uuid']
+    existing_taxi_uuid = existing_taxi.get('uuid')
     # if no uuid, assume logged off already
     if not existing_taxi_uuid:
         return respond(400, "already logged off", {})

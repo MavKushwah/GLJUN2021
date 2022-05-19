@@ -86,7 +86,6 @@ Resources:
           SSM_MONGO_URI: !Ref MongoUriSsmParameterName
           MQTT_PUBLIC_IP: !Ref MqttPublicIp
           MQTT_PRIVATE_IP: !Ref MqttPrivateIp
-          TOPIC_ARN_PREFIX: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${Namespace}-taxi'
 
   LogoffLambda:
     Type: AWS::Lambda::Function
@@ -100,9 +99,19 @@ Resources:
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
+      Layers:
+        - !Ref LambdaLayer
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
       Environment:
         Variables:
           NAMESPACE: !Ref Namespace
+          SSM_MONGO_URI: !Ref MongoUriSsmParameterName
+          MQTT_PUBLIC_IP: !Ref MqttPublicIp
+          MQTT_PRIVATE_IP: !Ref MqttPrivateIp
 
   FindTaxiLambda:
     Type: AWS::Lambda::Function

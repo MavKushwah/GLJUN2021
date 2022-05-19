@@ -1,11 +1,15 @@
 BUCKET := taxi-service-gljun2021-04
 BUILD_STAMP := $(shell date +%s )
+SECURITY_GROUP := sg-02b5c584492efd383
+SUBNET_ID := subnet-02286615e3f602c96
+VPC_ID := vpc-0983a0152b48345b5
 
 init: check-env prepare-build
 	@echo "initializing workspace"
 	aws s3api create-bucket --bucket $(BUCKET) --region us-east-1 --acl public-read --object-ownership BucketOwnerPreferred
 
 	aws cloudformation deploy --template-file src/stack/base.yml --stack-name base-stack \
+		--parameter-overrides SubnetId=$(SUBNET_ID) SecurityGroup=$(SECURITY_GROUP) VpcId=$(VPC_ID) \
 		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
 build: check-env prepare-build
@@ -28,7 +32,7 @@ deploy: build
 	aws cloudformation validate-template --template-url https://$(BUCKET).s3.amazonaws.com/build/$(GLNAME)/$(BUILD_STAMP)/stack/main.yml > /dev/null
 	aws cloudformation deploy --template-file src/stack/main.yml --stack-name $(GLNAME)-taxi-service \
 		--parameter-overrides Bucket=$(BUCKET) Namespace=$(GLNAME) BuildStamp=$(BUILD_STAMP)\
-		DbSubnetId=subnet-02286615e3f602c96 LambdaSecurityGroup=sg-02b5c584492efd383 \
+		SubnetId=$(SUBNET_ID) SecurityGroup=$(SECURITY_GROUP) \
 		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
 

@@ -11,9 +11,9 @@ Parameters:
   BuildStamp:
       Type: String
       Description: String to be used to create artifacts
-  DbSubnetId:
+  SubnetId:
     Type: String
-  LambdaSecurityGroup:
+  SecurityGroup:
     Type: String
   MongoUriSsmParameterName:
     Type: String
@@ -54,9 +54,9 @@ Resources:
           S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
         VpcConfig:
           SecurityGroupIds:
-            - !Ref LambdaSecurityGroup
+            - !Ref SecurityGroup
           SubnetIds:
-            - !Ref DbSubnetId
+            - !Ref SubnetId
         Environment:
           Variables:
             NAMESPACE: !Ref Namespace
@@ -77,9 +77,9 @@ Resources:
         - !Ref LambdaLayer
       VpcConfig:
         SecurityGroupIds:
-          - !Ref LambdaSecurityGroup
+          - !Ref SecurityGroup
         SubnetIds:
-          - !Ref DbSubnetId
+          - !Ref SubnetId
       Environment:
         Variables:
           NAMESPACE: !Ref Namespace

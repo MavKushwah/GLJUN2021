@@ -1,5 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Stack to create Api gateway
+Parameters:
+  VpcId:
+    Type: String
+  SubnetId:
+    Type: String
+  SecurityGroup:
+    Type: String
 Resources:
 
   MongoUriParameter:
@@ -54,6 +61,19 @@ Resources:
       Name: "/mqtt-host-private"
       Type: String
       Value: !GetAtt MqttEc2Instance.PrivateIp
+
+  # Expose SSM Service in the subnet
+  ServiceEndpointsInVpc:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      SubnetIds:
+        - !Ref SubnetId
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
 
 Outputs:
   DriverPublicIp:

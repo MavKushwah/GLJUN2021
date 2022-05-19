@@ -11,9 +11,9 @@ Parameters:
   BuildStamp:
     Type: String
     Description: String to be used to create artifacts
-  DbSubnetId:
+  SubnetId:
     Type: String
-  LambdaSecurityGroup:
+  SecurityGroup:
     Type: String
   MongoUriSsmParameterName:
     Type: String
@@ -44,8 +44,8 @@ Resources:
         Namespace: !Ref Namespace
         Bucket: !Ref Bucket
         BuildStamp: !Ref BuildStamp
-        DbSubnetId: !Ref DbSubnetId
-        LambdaSecurityGroup: !Ref LambdaSecurityGroup
+        SubnetId: !Ref SubnetId
+        SecurityGroup: !Ref SecurityGroup
         MongoUriSsmParameterName: !Ref MongoUriSsmParameterName
         MqttPublicIp: !Ref MqttSsmPublicIp
         MqttPrivateIp: !Ref MqttSsmPrivateIp

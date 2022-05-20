@@ -1,0 +1,6 @@
+Docker commands :
+docker build -t taxi-client:1.0 .
+docker run -it taxi-client:1.0
+aws ecr get-login-password | docker login --username AWS --password-stdin 466703995071.dkr.ecr.us-east-1.amazonaws.com
+docker tag 907e2a6f4c55 466703995071.dkr.ecr.us-east-1.amazonaws.com/sand:1.0
+docker push 466703995071.dkr.ecr.us-east-1.amazonaws.com/sand:1.0

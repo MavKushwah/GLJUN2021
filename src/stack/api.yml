@@ -14,6 +14,10 @@ Parameters:
     Type: String
   FindTaxiLambdaArn:
     Type: String
+  AcceptRideLambdaArn:
+    Type: String
+  RideUpdateLambdaArn:
+    Type: String
   CleanupLambdaArn:
     Type: String
   ApiGatewayStageName:
@@ -122,6 +126,44 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindTaxiLambdaArn}/invocations
       ResourceId: !Ref FindTaxiProxyResource
+      RestApiId: !Ref RestApiGateway
+
+  AcceptRideProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: 'accept'
+
+  ApiGatewayAcceptRideMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: 'POST'
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AcceptRideLambdaArn}/invocations
+      ResourceId: !Ref AcceptRideProxyResource
+      RestApiId: !Ref RestApiGateway
+
+  RideUpdateProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: 'ride'
+
+  ApiGatewayRideUpdateMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: 'POST'
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RideUpdateLambdaArn}/invocations
+      ResourceId: !Ref RideUpdateProxyResource
       RestApiId: !Ref RestApiGateway
 
   CleanupProxyResource:

@@ -131,6 +131,53 @@ Resources:
         Variables:
           NAMESPACE: !Ref Namespace
 
+  AcceptRideLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${Namespace}-AcceptRide-Function"
+      Runtime: python3.7
+      Handler: 'accept.handler'
+      MemorySize: 128
+      Timeout: 10
+      Role: !Ref CommonLambdaRoleArn
+      Layers:
+        - !Ref LambdaLayer
+      Code:
+        S3Bucket: !Ref Bucket
+        S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
+      Environment:
+        Variables:
+          NAMESPACE: !Ref Namespace
+
+  RideUpdateLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${Namespace}-RideUpdate-Function"
+      Runtime: python3.7
+      Handler: 'ride.handler'
+      MemorySize: 128
+      Timeout: 10
+      Role: !Ref CommonLambdaRoleArn
+      Layers:
+        - !Ref LambdaLayer
+      Code:
+        S3Bucket: !Ref Bucket
+        S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
+      Environment:
+        Variables:
+          NAMESPACE: !Ref Namespace
+
+
   CleanupLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -183,6 +230,10 @@ Outputs:
     Value: !GetAtt RegisterLambda.Arn
   FindTaxiLambdaArn:
     Value: !GetAtt FindTaxiLambda.Arn
+  AcceptRideLambdaArn:
+    Value: !GetAtt AcceptRideLambda.Arn
+  RideUpdateLambdaArn:
+    Value: !GetAtt RideUpdateLambda.Arn
   CleanupLambdaArn:
     Value: !GetAtt CleanupLambda.Arn
   LocationLambdaArn:

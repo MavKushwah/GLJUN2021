@@ -60,6 +60,8 @@ Resources:
         RegisterLambdaArn: !GetAtt LambdaStack.Outputs.RegisterLambdaArn
         LocationLambdaArn: !GetAtt LambdaStack.Outputs.LocationLambdaArn
         FindTaxiLambdaArn: !GetAtt LambdaStack.Outputs.FindTaxiLambdaArn
+        AcceptRideLambdaArn: !GetAtt LambdaStack.Outputs.AcceptRideLambdaArn
+        RideUpdateLambdaArn: !GetAtt LambdaStack.Outputs.RideUpdateLambdaArn
         CleanupLambdaArn: !GetAtt LambdaStack.Outputs.CleanupLambdaArn
         ApiGatewayStageName: 'v1'
 

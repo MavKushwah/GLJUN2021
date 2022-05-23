@@ -91,7 +91,9 @@ def token():
 def run_event(fn, event):
     r = fn(event, None)
     resp = make_response(r['body'], r['statusCode'])
-    resp.headers.update(r['headers'])
+    #resp.headers.update(r['headers'])
+    for k, v in r['headers'].items():
+        resp.headers.set(k, v)
     return resp
 
 

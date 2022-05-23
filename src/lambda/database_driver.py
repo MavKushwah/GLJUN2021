@@ -8,8 +8,10 @@
 # @author Shanger Sivaramachandran
 # @since 2022.05
 #
+import os
 
 import pymongo
+import pymongo_inmemory
 from pymongo.collection import Collection
 from pymongo.database import Database
 
@@ -30,7 +32,10 @@ class DatabaseDriver:
     __database: Database
 
     def __init__(self, database_name: str, mongo_uri: str):
-        self.client = pymongo.MongoClient(mongo_uri)
+        if os.environ.get('mode') == 'LOCAL':
+            self.client = pymongo_inmemory.MongoClient()
+        else:
+            self.client = pymongo.MongoClient(mongo_uri)
         self.database_name = database_name
         self.__create_database()
         self.__create_collections()

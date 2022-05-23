@@ -83,6 +83,8 @@ def get_mqtt_public_host() -> str:
 
 
 def get_mongo_uri() -> str:
+    if os.environ.get('mode') == 'LOCAL':
+        return ''
     ssm = boto3.client('ssm')
     parameter = ssm.get_parameter(Name=os.environ['SSM_MONGO_URI'], WithDecryption=False)
     return parameter['Parameter']['Value']

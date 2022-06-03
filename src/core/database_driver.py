@@ -24,7 +24,7 @@ COL_LOC_HIST = 'taxi_location_history'
 COL_REQ_HIST = 'taxi_request_history'
 
 
-class DatabaseDriver:
+class DatabaseDriver2:
     # Mongo Uri to connect to Database;
     # The concern to generate the right template for Mongo Uri is a util to be shared between all components.
     client: pymongo.MongoClient

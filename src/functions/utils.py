@@ -89,7 +89,7 @@ def get_mongo_uri() -> str:
 
 
 def get_database_name() -> str:
-    return '{}-taxiservicedb'.format(get_namespace()).lower()
+    return '{}-taxi_service'.format(get_namespace()).lower()
 
 
 def is_connected(hostname, port):

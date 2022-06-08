@@ -7,6 +7,7 @@
 #
 # @author Shanger Sivaramachandran
 # @since 2022.05
+
 import mongodbconnection
 
 COL_TAXI = 'taxi_profile'
@@ -42,7 +43,9 @@ class DatabaseDriver:
             db = self.cli.connection[self.database_name]
             taxi_location_col = COL_LOC_HIST + '_' + taxi['taxi_id']
             db[taxi_location_col]
-            historic_location = self.Update_location_history(taxi['active_taxi'], taxi['location'], taxi['taxi_on_duty'], taxi['updated_timestamp'])
+            db[taxi_location_col].create_index([('location', '2dsphere')])
+            historic_location = self.Update_location_history(taxi['active_taxi'], taxi['location'],
+                                                             taxi['taxi_on_duty'], taxi['last_update'])
             db[taxi_location_col].insert_one(historic_location)
             return db[COL_TAXI].insert_one(taxi)
 
@@ -121,8 +124,7 @@ class DatabaseDriver:
         historic_location = {}
         historic_location['location'] = {}
         historic_location['location']['type'] = 'Point'
-        historic_location['location']['coordinates'] = []
-        historic_location['location']['coordinates'] = location
+        historic_location['location']['coordinates'] = location['coordinates']
         historic_location['location']['time_stamp'] = updated_timestamp
         historic_location['location']['taxi_on_duty'] = taxi_on_duty
         historic_location['location']['active_taxi'] = active_taxi
@@ -133,8 +135,10 @@ class DatabaseDriver:
         with self.cli:
             db = self.cli.connection[self.database_name]
             collection_list = db.list_collection_names()
+            print(collection_list)
             for collection in collection_list:
-                collection.drop()
+                print(collection)
+                db[collection].drop()
 
     def create_index(self):
         with self.cli:

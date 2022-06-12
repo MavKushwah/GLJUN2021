@@ -7,3 +7,4 @@ joblib
 dnspython
 requests
 flask
+geojson==2.5.0

@@ -39,17 +39,9 @@ def handler(event, context):
     if ride.get('status') != 'REQUESTED':
         return bad_request()
     # get co-ordinates
-    location: list = ride.get('location')
+    location = ride.get('location')
     # Find the nearest taxi(s), and notify them all!
-    taxi_list: list = db_driver.run_query(col_name=COL_TAXI, query={
-        'status': 'ONLINE',
-        'location': {
-            '$nearSphere': {
-                '$geometry': {
-                    'type': "Point",
-                    'coordinates': location
-                },
-                '$maxDistance': 5000}}}, limit=10)
+    taxi_list: list = db_driver.find_nearby_taxi(location=location, type=ride.get("type"), radius=50000, limit=2)
     # send failed!
     if not taxi_list:
         return ok_response({"msg": "no nearby taxi", 'success': False})
@@ -66,16 +58,16 @@ def handler(event, context):
             mqtt_client.send_to_topic(topic=taxi.get('topic'), message={"type": "ride_request", "ride_id": ride_id})
         # say we are waiting
         mqtt_client.send_message(ride_topic, 'waiting for first acceptance by taxi', len(taxi_list))
-        expiry = int(time.time()) + 120
+        expiry = int(time.time()) + 25
         while int(time.time()) < expiry:
             ride = db_driver.get_ride(ride_id=ride_id)
             if ride.get('status') != 'REQUESTED':
                 return ok_response({'success': True, 'taxi_id': ride.get('taxi_id')})
-            time.sleep(10)
+            time.sleep(1)
             mqtt_client.send_message(ride_topic, 'waiting for first acceptance by taxi: remaining_time={}',
                                      (expiry - int(time.time())))
         # lets update the record if not assigned!
-        if db_driver.patch_ride_filter(ride_id=ride_id, query={'status': 'REQUESTED'}, patch={'status': 'FAILED'}):
+        if db_driver.update_ride(ride_id=ride_id, query={'status': 'REQUESTED'}, update_by={'status': 'FAILED'}):
             mqtt_client.send_message(ride_topic, 'changed status to failed state')
             mqtt_client.send_to_topic(ride_topic, {"completed": True})
             return ok_response({'success': False, 'msg': 'could not allocate taxi'})

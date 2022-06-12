@@ -7,6 +7,8 @@
 #
 # @author Shanger Sivaramachandran
 # @since 2022.05
+import json
+
 from bson import ObjectId
 from core.mongodbconnection import MongoDBConnection
 
@@ -45,9 +47,9 @@ class DatabaseDriver:
             taxi_location_col = COL_LOC_HIST + '_' + str(taxi_id)
             db[taxi_location_col]
             taxi_location_document = {"updated_timestamp": taxi["updated_timestamp"],
-                                        "location": taxi["location"],
-                                        "taxi_on_duty": taxi["taxi_on_duty"],
-                                          "active_taxi": taxi["active_taxi"]}
+                                      "location": taxi["location"],
+                                      "taxi_on_duty": taxi["taxi_on_duty"],
+                                      "active_taxi": taxi["active_taxi"]}
             db[taxi_location_col].insert_one(taxi_location_document)
             return taxi_id
 
@@ -57,26 +59,32 @@ class DatabaseDriver:
             db = self.cli.connection[self.database_name]
             return db[COL_TAXI].update_one({"_id": ObjectId(taxi_id)}, {"$set": patch})
 
-    def find_nearby_taxi(self, location: dict, taxi_type: str, radius: float, limit: int) -> list:
+    def find_nearby_taxi(self, location: dict, type: str, radius: float, limit: int) -> list:
         metersPerKiloMeter = 1000
         with self.cli:
             db = self.cli.connection[self.database_name]
-            taxi_list = db[COL_TAXI].find({
+            find_taxi_query = {
                 'location': {
                     '$near':
                         {
                             '$geometry': location, '$maxDistance': radius * metersPerKiloMeter
                         }
                 },
-                "taxi_type": taxi_type,
-                "taxi_on_duty": True,
-                "active_taxi": False,
-            })
+                "type": type,
+                "taxi_on_duty": False,
+                "active_taxi": True,
+            }
+            if type == "ALL":
+                find_taxi_query.pop("type")
+
+            taxi_list = db[COL_TAXI].find(find_taxi_query)
+            print(json.dumps(find_taxi_query))
 
             nearByTaxiList = []
-            for taxi in range(limit - 1):
+            print(f"Near by taxi : {taxi_list}")
+            for taxi in range(limit):
                 for taxi in taxi_list:
-                    nearByTaxiList.append(str(taxi['_id']))
+                    nearByTaxiList.append(taxi)
             return nearByTaxiList
 
     # return list of all taxi records
@@ -89,26 +97,33 @@ class DatabaseDriver:
     def get_user(self, user_id: str) -> dict:
         with self.cli:
             db = self.cli.connection[self.database_name]
-            return dict(db[COL_USER].find({user_id: user_id}))
+            return dict(db[COL_USER].find_one({'_id': ObjectId(user_id)}))
 
     # insert new user record here, return Id
     def create_user_record(self, user: dict) -> str:
         with self.cli:
             db = self.cli.connection[self.database_name]
-            return db[COL_USER].insert_one(user)
+            return db[COL_USER].insert_one(user).inserted_id
 
     # Create new ride for the user.
     def create_new_ride(self, ride: dict) -> str:
         with self.cli:
             db = self.cli.connection[self.database_name]
-            return db[COL_RIDES].insert_one(ride)
+            return db[COL_RIDES].insert_one(ride).inserted_id
 
     # Update Ride status and end time of the ride.
     def update_ride_status(self, ride_id, ride_status: str, ride_completion_time):
         with self.cli:
             db = self.cli.connection[self.database_name]
-            return db[COL_RIDES].update({"ride_id": ride_id}, {"$set": {"ride_status": ride_status,
+            return db[COL_RIDES].find_and_modify({"_id": ObjectId(ride_id)}, {"$set": {"ride_status": ride_status,
                                                                         "completion_time": ride_completion_time}})
+
+    def update_ride(self, ride_id, query: dict, update_by: dict):
+        with self.cli:
+            db = self.cli.connection[self.database_name]
+            filter_query = dict(query)
+            filter_query["_id"] = ObjectId(ride_id)
+            return db[COL_RIDES].find_one_and_update(filter_query, {"$set": update_by})
 
     # update the latest location of the taxi.
     def update_latest_taxi_location(self, taxi_id, patch: dict):
@@ -132,3 +147,10 @@ class DatabaseDriver:
         with self.cli:
             db = self.cli.connection[self.database_name]
             db[COL_TAXI].create_index([('location', '2dsphere')])
+            db[COL_RIDES].create_index([('location', '2dsphere')])
+
+    # return ride record by id.
+    def get_ride(self, ride_id: str) -> dict:
+        with self.cli:
+            db = self.cli.connection[self.database_name]
+            return dict(db[COL_RIDES].find_one({'_id': ObjectId(ride_id)}))

@@ -123,7 +123,14 @@ Resources:
     Properties:
       FunctionName: !Sub "${Namespace}-CreateRide-Function"
       Runtime: python3.7
+      Layers:
+        - !Ref LambdaLayer
       Handler: 'functions.createride.handler'
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
       MemorySize: 128
       Timeout: 10
       Role: !Ref CommonLambdaRoleArn
@@ -142,10 +149,17 @@ Resources:
     Properties:
       FunctionName: !Sub "${Namespace}-FindTaxi-Function"
       Runtime: python3.7
+      Layers:
+        - !Ref LambdaLayer
       Handler: 'functions.find_taxi.handler'
       MemorySize: 128
-      Timeout: 10
+      Timeout: 30
       Role: !Ref CommonLambdaRoleArn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
       Code:
         S3Bucket: !Ref Bucket
         S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
@@ -213,6 +227,8 @@ Resources:
     Properties:
       FunctionName: !Sub "${Namespace}-Cleanup-Function"
       Runtime: python3.7
+      Layers:
+        - !Ref LambdaLayer
       Handler: 'functions.cleanup.handler'
       MemorySize: 128
       Timeout: 10

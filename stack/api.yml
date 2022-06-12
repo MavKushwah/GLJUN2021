@@ -278,6 +278,14 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/cleanup
 
+  AcceptRideLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AcceptRideLambdaArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/accept
+
 Outputs:
   ApiGatewayEndpoint:
     Value: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}/

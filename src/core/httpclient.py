@@ -24,7 +24,6 @@ class HttpClient:
         request_url = f'{self.uri}{path}'
         helper = JwtHelper(secret=secret)
         token = helper.create_jwt(identity=identity, minutes=2)
-        print(f"identity : {identity}")
         response = requests.request(method="POST", url=request_url, json=body,
                                     headers={'Content-Type': 'application/json',
                                              f'X-Taxi-Id': identity,

@@ -122,6 +122,10 @@ def is_valid_location(latitude, longitude) -> bool:
     return True
 
 
+def unauthorized(reason: str) -> dict:
+    return respond(401, {"msg": "unauthorized"}, {})
+
+
 def unauthorized() -> dict:
     return respond(401, {"msg": "unauthorized"}, {})
 

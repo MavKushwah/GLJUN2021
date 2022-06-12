@@ -13,7 +13,6 @@ import uuid
 
 from .utils import *
 from core import DatabaseDriver
-from core.database_driver import COL_TAXI
 
 
 def handler(event, context):
@@ -24,10 +23,10 @@ def handler(event, context):
     existing_user = db_driver.get_user(user_id=user_id)
     # if no user found, return 401
     if not existing_user:
-        return unauthorized()
+        return unauthorized("user")
     # validate jwt
     if not validate_token(event, identity=user_id, secret=existing_user['secret']):
-        return unauthorized()
+        return unauthorized("token invalid")
     # get body
     body: dict = get_request_body_json(event)
     # find co-ordinates
@@ -38,13 +37,15 @@ def handler(event, context):
     if not is_valid_location(location[0], location[1]):
         return bad_request()
 
+    taxi_type: str = body.get('type')
     # Create a new Record in Db representing a request from user!
     ride_topic = f'{get_namespace()}/ride/{str(uuid.uuid4())}'
-    ride_id: str = db_driver.create_ride_record(ride={
+    ride_id: str = db_driver.create_new_ride(ride={
         'user_id': user_id,
         'created_on': int(time.time()),
         'topic': ride_topic,
         'status': 'REQUESTED',
-        'location': location
+        'location': {"type": "Point", "coordinates": location},
+        "type": taxi_type
     })
-    return ok_response({"ride_id": ride_id, "topic": ride_topic, "host": get_mqtt_public_host()})
+    return ok_response({"ride_id": str(ride_id), "topic": ride_topic, "host": get_mqtt_public_host()})

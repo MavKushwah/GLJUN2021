@@ -10,11 +10,8 @@
 #
 import time
 
-from bson import ObjectId
-
 from .utils import *
 from core import DatabaseDriver
-from core.database_driver import COL_RIDES, COL_TAXI
 
 
 def handler(event, context):
@@ -55,18 +52,17 @@ def handler(event, context):
         # send taxi response
         mqtt_client.send_message(ride.get('topic'), 'taxi {} accepted your request', taxi_id)
         # run a update
-        count: int = db_driver.patch_by_query(col_name=COL_RIDES,
-                                              query={
-                                                  '_id': ObjectId(ride_id),
-                                                  'status': 'REQUESTED'
-                                              },
-                                              patch={
-                                                  'updated_on': int(time.time()),
-                                                  'taxi_id': taxi_id,
-                                                  'status': 'ASSIGNED'})
+        count: int = db_driver.update_ride(ride_id=ride_id,
+                                           query={
+                                               'status': 'REQUESTED'
+                                           },
+                                           update_by={
+                                               'updated_on': int(time.time()),
+                                               'taxi_id': taxi_id,
+                                               'status': 'ASSIGNED'})
         if count == 1:
             # run update
-            db_driver.patch_taxi(taxi_id=taxi_id, patch={'updated_on': int(time.time()), 'status': 'ASSIGNED'})
+            db_driver.update_taxi_record(taxi_id=taxi_id, patch={'updated_on': int(time.time()), 'status': 'ASSIGNED'})
             # send acceptance
             mqtt_client.send_message(ride.get('topic'), 'taxi {} assigned to your request', taxi_id)
             return ok_response({"success": True})

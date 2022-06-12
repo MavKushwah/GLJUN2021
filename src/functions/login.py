@@ -29,20 +29,19 @@ def handler(event, context):
     # validate jwt
     if not validate_token(event, identity=taxi_id, secret=existing_taxi['secret']):
         respond(401, "unauthorized", {})
-    # create uuid for the taxi to subscribe to
-    taxi_uuid = str(uuid.uuid4())
-    topic = f'{get_namespace()}/taxi/{taxi_uuid}'
+
+    topic = f'{get_namespace()}/taxi/{taxi_id}'
     # patch
     if not db_driver.update_taxi_record(taxi_id=taxi_id, patch={
         "topic": topic,
         "login_time": int(time.time()),
-        "status": "ONLINE"
+        "active_taxi": True
     }):
         return respond(500, "", {})
     # publish a message to this uuid
     mqtt_client: MqttClient = get_mqtt_client()
-    # Respond with taxi uuid
-    print(f"login request from taxi {taxi_id} was set to uuid {taxi_uuid}")
+    # Respond with taxi_id
+    print(f"login request from taxi {taxi_id} was set to topic : {topic}")
     mqtt_client.connect()
     mqtt_client.send_to_topic(topic=topic, message={"msg": "welcome"})
     mqtt_client.client.disconnect()

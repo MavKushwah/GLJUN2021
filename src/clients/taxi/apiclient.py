@@ -71,12 +71,17 @@ class TaxiApiClient:
 
     def register(self):
         self.log.log('registering this taxi with server')
+        current_latitude = random.uniform(self.bound.min_latitude, self.bound.max_latitude)
+        current_longitude = random.uniform(self.bound.min_longitude, self.bound.max_longitude)
         payload = {
             "type": "taxi",
             "name": self.name,
             "taxi_type": self.taxi_type,
             "license": self.license,
-            "driver_name": self.driver_name
+            "driver_name": self.driver_name,
+            "location": {"type": "Point", "coordinates": [current_longitude, current_latitude]},
+            "registered_on": time.time(),
+            "last_updated_time": time.time()
         }
         data: dict = self.server_client.send_anonymous('register', payload)
         self.taxi_id = data['taxi_id']

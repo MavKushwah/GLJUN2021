@@ -31,7 +31,7 @@ def handler(event, context):
     if not existing_taxi_topic:
         return bad_request()
     # update
-    if not db_driver.patch_taxi(taxi_id=taxi_id, patch={
+    if not db_driver.update_taxi_record(taxi_id=taxi_id, patch={
         "logoff_time": int(time.time()),
         "status": "OFFLINE"
     }):

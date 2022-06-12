@@ -8,6 +8,7 @@
 # @author Anirudh Kushwah
 # @since 2022.05
 #
+import time
 
 from .utils import *
 from core import DatabaseDriver
@@ -35,11 +36,14 @@ def handler(event, context):
         return bad_request()
     # patch location co-ordinates for taxi
     print(f"location update request from taxi {taxi_id} with location {location}")
-    patch_succeeded = db_driver.patch_taxi(taxi_id=taxi_id, patch={
-        "location": {
-            "type": "Point",
-            "coordinates": location
-        }})
+    taxi_location_detail : dict = {
+                "updated_timestamp": time.time(),
+                 "location":  {"type": "Point", "coordinates": location},
+                "taxi_on_duty": existing_taxi["taxi_on_duty"],
+                "active_taxi": existing_taxi["active_taxi"],
+                "rider_id": "" # Need to be worked on
+    }
+    patch_succeeded = db_driver.update_latest_taxi_location(taxi_id=taxi_id, patch=taxi_location_detail)
     if not patch_succeeded:
         return server_error()
     return ok_request()

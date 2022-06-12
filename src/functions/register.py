@@ -56,6 +56,12 @@ def handle_taxi_registration(data: dict):
     # Generate a secret
     random_secret = str(uuid.uuid4())
     taxi['secret'] = random_secret
+    taxi['location'] = data.get('location')
+    taxi['active_taxi'] = False
+    taxi['taxi_on_duty'] = False
+    taxi['registered_on'] = data.get('registered_on')
+    taxi['driven_by'] = {'name': data.get('driver_name'), 'license': data.get('licence')}
+    taxi['updated_timestamp'] = data.get('last_updated_time')
 
     print(f"Registering Taxi : {taxi}")
     # Save

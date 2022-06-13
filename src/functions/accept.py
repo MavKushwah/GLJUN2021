@@ -27,7 +27,7 @@ def handler(event, context):
     if not validate_token(event, identity=taxi_id, secret=existing_taxi['secret']):
         return unauthorized()
     # are you already occupied
-    if existing_taxi['status'] != 'ONLINE':
+    if existing_taxi['taxi_on_duty']:
         return bad_request()
     # extract body for location
     body: dict = get_request_body_json(event)

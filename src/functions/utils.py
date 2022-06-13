@@ -8,14 +8,11 @@
 # @author Anirudh Kushwah
 # @since 2022.05
 #
-import os
-from typing import Optional
-
 import base64
 import json
+import os
 import socket
-
-import boto3
+from typing import Optional
 
 from core import DatabaseDriver, JwtHelper, MqttClient
 
@@ -85,6 +82,7 @@ def get_mongo_uri() -> str:
         return ''
     return os.environ.get("MONGO_URI")
 
+
 def get_database_name() -> str:
     return '{}-taxi_service'.format(get_namespace()).lower()
 
@@ -122,28 +120,24 @@ def is_valid_location(latitude, longitude) -> bool:
     return True
 
 
-def unauthorized(reason: str) -> dict:
-    return respond(401, {"msg": "unauthorized"}, {})
+def unauthorized(msg: str = "unauthorized") -> dict:
+    return respond(401, {"msg": msg}, {})
 
 
-def unauthorized() -> dict:
-    return respond(401, {"msg": "unauthorized"}, {})
+def bad_request(msg="bad request") -> dict:
+    return respond(400, {"msg": msg}, {})
 
 
-def bad_request() -> dict:
-    return respond(400, {"msg": "bad request"}, {})
-
-
-def ok_request() -> dict:
-    return respond(200, {"msg": "ok"}, {})
+def ok_request(msg="ok") -> dict:
+    return respond(200, {"msg": msg}, {})
 
 
 def ok_response(body: dict) -> dict:
     return respond(200, body, {})
 
 
-def server_error() -> dict:
-    return respond(500, {"msg": "server error"}, {})
+def server_error(msg="server error") -> dict:
+    return respond(500, {"msg": msg}, {})
 
 
 def taxi_types() -> set:

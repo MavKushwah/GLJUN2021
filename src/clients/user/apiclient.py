@@ -46,7 +46,9 @@ class UserApiClient:
         self.bound = bound
         self.ride_in_progress = False
         self.ride_remaining = 5
-        self.taxi_type = random.choice(TAXI_TYPES)
+        taxi_types = list(['ALL'])
+        taxi_types.extend(TAXI_TYPES)
+        self.taxi_type = random.choice(taxi_types)
         self.log = Log(name=f'{name}/{self.taxi_type}')
 
     def send_authenticated(self, path: str, body):

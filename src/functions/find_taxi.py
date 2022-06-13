@@ -41,9 +41,6 @@ def handler(event, context):
     location = ride.get('location')
     # Find the nearest taxi(s), and notify them all!
     taxi_list: list = db_driver.find_nearby_taxi(location=location, type=ride.get("type"), radius=50000, limit=2)
-    # send failed!
-    if not taxi_list:
-        return ok_response({"msg": "no nearby taxi", 'success': False})
 
     # Create a new Record in Db representing a request from user!
     ride_topic = ride.get('topic')
@@ -52,6 +49,11 @@ def handler(event, context):
     try:
         mqtt_client.connect()
         mqtt_client.send_message(ride_topic, 'found {} nearby available taxi(s)', len(taxi_list))
+        # send failed!
+        if not taxi_list:
+            mqtt_client.send_to_topic(ride_topic, {"completed": True})
+            return ok_response({"msg": "no nearby taxi", 'success': False})
+
         for taxi in taxi_list:
             mqtt_client.send_message(ride_topic, 'sending a ride request to taxi {}', taxi.get("name"))
             mqtt_client.send_to_topic(topic=taxi.get('topic'), message={"type": "ride_request", "ride_id": ride_id})

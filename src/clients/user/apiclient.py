@@ -10,6 +10,7 @@
 #
 import json
 import random
+from threading import Thread
 
 import paho
 
@@ -88,18 +89,15 @@ class UserApiClient:
 
         # wait for responses
         mqtt_client.subscribe(fn=message_responder, topic=ride_topic)
-        mqtt_client.client.loop_start()
+        t = Thread(target=mqtt_client.block)
+        t.start()
         # lets find taxi!
-        try:
-            data: dict = self.send_authenticated('findtaxi', data)
-            if data.get('success'):
-                self.log.log('taxi allocated for the ride: taxi_id={}', data.get('taxi_id'))
-            else:
-                self.log.log('taxi allocation failed for ride: ride_id={} msg={}', ride_id, data.get('msg'))
-
-        finally:
-            mqtt_client.client.loop_stop()
-            mqtt_client.close()
+        data: dict = self.send_authenticated('findtaxi', data)
+        if data.get('success'):
+            self.log.log('taxi allocated for the ride: taxi_id={}', data.get('taxi_id'))
+        else:
+            self.log.log('taxi allocation failed for ride: ride_id={} msg={}', ride_id, data.get('msg'))
+        t.join()
 
     def ride_request_handler(self, mqtt_client: MqttClient, message: paho.mqtt.client.MQTTMessage):
         body: dict = json.loads(message.payload)

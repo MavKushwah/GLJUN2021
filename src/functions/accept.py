@@ -52,17 +52,17 @@ def handler(event, context):
         # send taxi response
         mqtt_client.send_message(ride.get('topic'), 'taxi {} accepted your request', taxi_id)
         # run a update
-        count: int = db_driver.update_ride(ride_id=ride_id,
-                                           query={
-                                               'status': 'REQUESTED'
-                                           },
-                                           update_by={
-                                               'updated_on': int(time.time()),
-                                               'taxi_id': taxi_id,
-                                               'status': 'ASSIGNED'})
-        if count == 1:
+        count: dict = db_driver.update_ride(ride_id=ride_id,
+                                            query={
+                                                'status': 'REQUESTED'
+                                            },
+                                            update_by={
+                                                'updated_on': int(time.time()),
+                                                'taxi_id': taxi_id,
+                                                'status': 'ASSIGNED'})
+        if count:
             # run update
-            db_driver.update_taxi_record(taxi_id=taxi_id, patch={'updated_on': int(time.time()), 'status': 'ASSIGNED'})
+            db_driver.update_taxi_record(taxi_id=taxi_id, patch={'updated_on': int(time.time()), 'taxi_on_duty': True})
             # send acceptance
             mqtt_client.send_message(ride.get('topic'), 'taxi {} assigned to your request', taxi_id)
             return ok_response({"success": True})

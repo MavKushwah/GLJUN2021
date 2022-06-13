@@ -8,104 +8,72 @@
 # @author Drisya Mathilakath
 # @since 2022.05
 #
+
+import requests
+from core.jwthelper import JwtHelper
 import json
-import random
-
-import paho
-
 from core import *
 
 
-class UserApiClient:
+class ApiClient:
     # URI for server
-    server_client: HttpClient
+    uri: str
     # Secret given by server
     secret: str
+    # user id given by server
+    user_id: str
     # name of the user
     name: str
-    # user id
-    user_id: str
-    # topic
-    topic: str
-    # mqtt client
-    mqtt_client: MqttClient
-    # logger
-    log: Log
-    # location box
-    bound: LocationBound
-    # are you in middle of ride
-    ride_in_progress: bool
-    # ride count
-    ride_remaining: int
-    # taxi type
-    taxi_type: str
+    #ride_id of the ride request
+    ride_id: str
+    # ride_topic
+    ride_topic: str
 
-    def __init__(self, uri: str, name: str, bound: LocationBound):
-        self.server_client = HttpClient(uri=uri)
+    def __init__(self, uri: str, name: str):
+        self.uri = uri
         self.name = name
-        self.bound = bound
-        self.ride_in_progress = False
-        self.ride_remaining = 5
-        self.taxi_type = random.choice(TAXI_TYPES)
-        self.log = Log(name=f'{name}/{self.taxi_type}')
-
-    def send_authenticated(self, path: str, body):
-        return self.server_client.send_user_request(path, self.user_id, self.secret, body)
 
     def register(self):
-        self.log.log('registering this user with server')
-        payload = {
-            "type": "user",
-            "name": self.name
-        }
-        data: dict = self.server_client.send_anonymous('register', payload)
+        print(f'registering a new user for {self.name}')
+        request_url = f'{self.uri}/register'
+        payload = {"type": "user", "name": self.name}
+        response = requests.request(method="POST", url=request_url, json=payload,
+                                    headers={'Content-Type': 'application/json'})
+        #print(response)
+        data: dict = response.json()
         self.user_id = data['user_id']
         self.secret = data['secret']
-        self.log.log('registered user: id={} secret={}', self.user_id, self.secret)
+        print(data)
+        print(f'{self.name} registered with user id {self.user_id} and secret {self.secret}')
 
-    def ride(self):
-        current_latitude = random.uniform(self.bound.min_latitude, self.bound.max_latitude)
-        current_longitude = random.uniform(self.bound.min_longitude, self.bound.max_longitude)
-        self.log.log('create ride request: location={}, {} type={}', current_longitude, current_latitude,
-                     self.taxi_type)
-        payload = {'location': [current_longitude, current_latitude], 'type': self.taxi_type}
-        data: dict = self.send_authenticated('createride', payload)
+    def createride(self, **kwargs):
+        print(f'kwargs {kwargs}')
+        longitude = kwargs['longitude']
+        latitude = kwargs['latitude']
+        print(f'{self.user_id}/{self.name} creating ride request from location {longitude} and {latitude}')
+        request_url = f'{self.uri}/createride'
+        helper = JwtHelper(secret=self.secret)
+        token = helper.create_jwt(identity=self.user_id, minutes=2)
+        payload = {'location': [longitude, latitude]}
+        response = requests.request(method="POST", url=request_url, json=payload,
+                                    headers={'Content-Type': 'application/json',
+                                             'X-User-Id': self.user_id,
+                                             'X-Token': token})
+        data: dict = response.json()
+        self.ride_id = data['ride_id']
+        self.ride_topic = data['topic']
+        print(f'Response from createride {data}')
+        self.find_taxi(self.ride_id, latitude, longitude)
 
-        ride_topic = data.get('topic')
-        mqtt_host = data.get('host')
-        ride_id = data.get('ride_id')
-        self.log.log('ride request accepted: topic={} host={} ride_id={}', ride_topic, mqtt_host, ride_id)
-
-        # subscribe to topic
-        mqtt_client = MqttClient(host=mqtt_host, name=self.name)
-        mqtt_client.connect()
-
-        # handler for message
-        def message_responder(client, userdata, message):
-            self.ride_request_handler(mqtt_client, message)
-
-        # wait for responses
-        mqtt_client.subscribe(fn=message_responder, topic=ride_topic)
-        mqtt_client.client.loop_start()
-        # lets find taxi!
-        try:
-            data: dict = self.send_authenticated('findtaxi', data)
-            if data.get('success'):
-                self.log.log('taxi allocated for the ride: taxi_id={}', data.get('taxi_id'))
-            else:
-                self.log.log('taxi allocation failed for ride: ride_id={} msg={}', ride_id, data.get('msg'))
-
-        finally:
-            mqtt_client.client.loop_stop()
-            mqtt_client.close()
-
-    def ride_request_handler(self, mqtt_client: MqttClient, message: paho.mqtt.client.MQTTMessage):
-        body: dict = json.loads(message.payload)
-        if body.get("type") == "message":
-            self.log.log('message from server: {}', body.get('msg'))
-            return
-        if body.get('completed'):
-            self.log.log('ride request has been served by server: ride_id={}', body.get('ride_id'))
-            mqtt_client.close()
-            return
-        self.log.log('unhandled message from server: {}', body)
+    def find_taxi(self, ride_id, latitude, longitude):
+        print(f'{self.user_id}/{self.name} trying to find a taxi from location {latitude} and {longitude}')
+        request_url = f'{self.uri}/findtaxi'
+        helper = JwtHelper(secret=self.secret)
+        token = helper.create_jwt(identity=self.user_id, minutes=2)
+        payload = {'ride_id': ride_id}
+        response = requests.request(method="POST", url=request_url, json=payload,
+                                    headers={'Content-Type': 'application/json',
+                                             'X-User-Id': self.user_id,
+                                             'X-Token': token})
+        data: dict = response.json()
+        print(f'Server responded with {data}')

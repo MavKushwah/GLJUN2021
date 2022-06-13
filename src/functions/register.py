@@ -36,10 +36,12 @@ def handle_taxi_registration(data: dict):
     taxi: dict = dict()
 
     # Validate Taxi Type
-    taxi_type: str = data.get('taxi_type')
+    #taxi_type: str = data.get('taxi_type')
+    taxi_type: str = data.get('category')
     if taxi_type not in taxi_types():
         return bad_request()
-    taxi['type'] = taxi_type
+    #taxi['type'] = taxi_type
+    taxi['category'] = taxi_type
 
     # Validate Name
     driver_name = data.get('name')

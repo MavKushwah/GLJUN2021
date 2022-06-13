@@ -8,37 +8,43 @@
 # @author Drisya Mathilakath
 # @since 2022.05
 #
-import argparse
-import random
 from random import uniform
-from joblib import Parallel, delayed
+import argparse
+from src.clients.user.apiclient import ApiClient
+from threading import Thread
+from core import DatabaseDriver
+from src.functions.utils import *
 
-from clients.user import UserApiClient
-from core import LocationBound
 
 # Initializing Parser
-parser = argparse.ArgumentParser(description='taxi client')
-parser.add_argument('--count', type=int, help='number of taxi to run')
-parser.add_argument('--uri', type=str, help='server url to connect to')
-parser.add_argument('--latitude-min', type=str, help='minimum latitude to run with')
-parser.add_argument('--latitude-max', type=str, help='maximum latitude to run with')
-parser.add_argument('--longitude-min', type=str, help='minimum longitude to run with')
-parser.add_argument('--longitude-max', type=str, help='maximum longitude to run with')
+parser = argparse.ArgumentParser(description='User Registration')
+
+#Adding argument
+parser.add_argument('--count', type=int, help='user count')
+parser.add_argument('--uri', type=str, help='server uri')
+parser.add_argument('--latitude', type=int, nargs='+', help='min and max latitude')
+parser.add_argument('--longitude', type=int, nargs='+', help='min and max longitude')
 args = parser.parse_args()
 
-# create bound
-bound = LocationBound()
-bound.min_latitude = float(args.latitude_min)
-bound.max_latitude = float(args.latitude_max)
-bound.min_longitude = float(args.longitude_min)
-bound.max_longitude = float(args.longitude_max)
+user_count = args.count
+server_uri = args.uri
+min_latitude = args.latitude[0]
+max_latitude = args.latitude[1]
+min_longitude = args.longitude[0]
+max_longitude = args.longitude[1]
 
 
-user_list = list()
-for index in range(0, args.count):
-    name = f'user-{index}'
-    client = UserApiClient(uri=args.uri, name=name, bound=bound)
+for index in range(0, user_count):
+    name = f'taxi user {index}'
+    client = ApiClient(uri=server_uri, name=name)
     client.register()
-    user_list.append(client)
 
-Parallel(n_jobs=args.count, backend='threading')(delayed(client.ride)() for client in user_list)
+db_driver: DatabaseDriver = get_db_driver()
+user_list: list = db_driver.list_all_users()
+print(user_list)
+# need to loop through user_list and execute below for each user_id
+latitude, longitude = uniform(min_latitude, max_latitude), uniform(min_longitude, max_longitude)
+t = Thread(target=client.createride, kwargs={'user_id': user, 'longitude': longitude, 'latitude': latitude})
+t.start()
+
+

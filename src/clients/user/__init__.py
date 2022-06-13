@@ -9,4 +9,4 @@
 # @since 2022.05
 #
 
-from .apiclient import UserApiClient
+from .apiclient import ApiClient

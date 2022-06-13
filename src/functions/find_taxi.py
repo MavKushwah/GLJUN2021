@@ -12,7 +12,6 @@ import time
 
 from .utils import *
 from core import DatabaseDriver
-from core.database_driver import COL_TAXI
 
 
 def handler(event, context):

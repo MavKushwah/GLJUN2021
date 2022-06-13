@@ -43,17 +43,19 @@ def handler(event, context):
         mqtt_client.connect()
         ride_status: str = ride.get('status')
         if action == 'start' and ride_status == 'ASSIGNED':
-            if not db_driver.patch_taxi(taxi_id=taxi_id, patch={'updated_on': int(time.time()), 'status': 'RUNNING'}):
+            if not db_driver.update_taxi_record(taxi_id=taxi_id,
+                                                patch={'updated_on': int(time.time()), 'taxi_on_duty': True}):
                 return server_error()
-            if db_driver.patch_ride(ride_id=ride_id, patch={'status': 'RUNNING', 'updated_on': int(time.time())}):
+            if db_driver.update_ride(ride_id=ride_id, query={}, update_by={'status': 'RUNNING', 'updated_on': int(time.time())}):
                 mqtt_client.send_message(ride.get('topic'), 'your ride has started')
                 return ok_request()
+
         if action == 'end' and ride_status == 'RUNNING':
-            if db_driver.patch_ride(ride_id=ride_id, patch={'status': 'COMPLETED', 'completed_on': int(time.time())}):
+            if db_driver.update_ride(ride_id=ride_id, query={}, update_by={'status': 'COMPLETED', 'completed_on': int(time.time())}):
                 mqtt_client.send_message(ride.get('topic'), 'your ride has ended')
                 mqtt_client.send_to_topic(ride.get('topic'), {"completed": True, "ride_id": ride_id})
-                if not db_driver.patch_taxi(taxi_id=taxi_id,
-                                            patch={'updated_on': int(time.time()), 'status': 'ONLINE'}):
+                if not db_driver.update_taxi_record(taxi_id=taxi_id,
+                                                    patch={'updated_on': int(time.time()), 'taxi_on_duty': False}):
                     return server_error()
                 return ok_request()
         return bad_request()

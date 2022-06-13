@@ -106,7 +106,7 @@ class TaxiApiClient:
         self.log.log('mqtt-message: {}', body)
         message_type: str = body.get('type')
         if message_type == 'ride_request':
-            accept: bool = bool(random.getrandbits(1))
+            accept: bool = random.randint(0, 11) < 9
             body['accepted'] = accept
             time.sleep(random.randint(1, 5))
             success: dict = self.send_authenticated('accept', body)
@@ -139,7 +139,7 @@ class TaxiApiClient:
         current_longitude = random.uniform(self.bound.min_longitude, self.bound.max_longitude)
         while count < 1000:
             self.send_location(current_latitude, current_longitude)
-            time.sleep(random.randint(30, 90))
+            time.sleep(random.randint(15, 30))
             # latitude
             current_latitude = current_latitude + random.uniform(-0.005, 0.005)
             current_longitude = current_longitude + random.uniform(-0.005, 0.005)

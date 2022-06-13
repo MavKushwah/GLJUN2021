@@ -269,6 +269,30 @@ Resources:
           MQTT_PUBLIC_IP: !Ref MqttPublicIp
           MQTT_PRIVATE_IP: !Ref MqttPrivateIp
 
+  GetAllTaxisLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${Namespace}-FindAllTaxis-Function"
+      Runtime: python3.7
+      Layers:
+        - !Ref LambdaLayer
+      Handler: 'functions.find_all_taxi.handler'
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref SubnetId
+      MemorySize: 128
+      Timeout: 10
+      Role: !Ref CommonLambdaRoleArn
+      Code:
+        S3Bucket: !Ref Bucket
+        S3Key: !Sub "build/${Namespace}/${BuildStamp}/lambda.zip"
+      Environment:
+        Variables:
+          NAMESPACE: !Ref Namespace
+          MONGO_URI: !Ref MongoUri
+
 Outputs:
 
   LoginLambdaArn:
@@ -289,4 +313,6 @@ Outputs:
     Value: !GetAtt CleanupLambda.Arn
   LocationLambdaArn:
     Value: !GetAtt LocationLambda.Arn
+  GetAllTaxisLambdaArn:
+    Value: !GetAtt GetAllTaxisLambda.Arn
 

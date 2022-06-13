@@ -24,6 +24,8 @@ Parameters:
     Type: String
   ApiGatewayStageName:
     Type: String
+  GetAllTaxisLambdaArn:
+    Type: String
 
 Resources:
 
@@ -187,6 +189,25 @@ Resources:
       ResourceId: !Ref RideUpdateProxyResource
       RestApiId: !Ref RestApiGateway
 
+  GetAllTaxiProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: 'findalltaxi'
+
+  ApiGatewayGetAllTaxiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: 'POST'
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllTaxisLambdaArn}/invocations
+      ResourceId: !Ref GetAllTaxiProxyResource
+      RestApiId: !Ref RestApiGateway
+
   CleanupProxyResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
@@ -218,6 +239,7 @@ Resources:
       - ApiGatewayLoginMethod
       - ApiGatewayLogoffMethod
       - ApiGatewayRideUpdateMethod
+      - ApiGatewayGetAllTaxiMethod
     Properties:
       RestApiId: !Ref RestApiGateway
       StageName: !Ref ApiGatewayStageName
@@ -285,6 +307,22 @@ Resources:
       FunctionName: !Ref AcceptRideLambdaArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/accept
+
+  RideUpdateLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref RideUpdateLambdaArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/ride
+
+  GetAllTaxiLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetAllTaxisLambdaArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*/POST/findalltaxi
 
 Outputs:
   ApiGatewayEndpoint:

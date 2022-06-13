@@ -136,6 +136,10 @@ def ok_response(body: dict) -> dict:
     return respond(200, body, {})
 
 
+def ok_response(body: []) -> dict:
+    return respond(200, body, {})
+
+
 def server_error(msg="server error") -> dict:
     return respond(500, {"msg": msg}, {})
 

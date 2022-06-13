@@ -64,6 +64,7 @@ Resources:
         AcceptRideLambdaArn: !GetAtt LambdaStack.Outputs.AcceptRideLambdaArn
         RideUpdateLambdaArn: !GetAtt LambdaStack.Outputs.RideUpdateLambdaArn
         CleanupLambdaArn: !GetAtt LambdaStack.Outputs.CleanupLambdaArn
+        GetAllTaxisLambdaArn: !GetAtt LambdaStack.Outputs.GetAllTaxisLambdaArn
         ApiGatewayStageName: 'v1'
 
 Outputs:

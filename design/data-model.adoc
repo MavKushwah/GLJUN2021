@@ -15,7 +15,8 @@ collection=taxi_profile
   "license": "KA/8312/56",
   "secret": "8d1b9081-d2dc-4db0-b331-8c62a76e62b8",
   "login_time": 1653500830,
-  "status": "ONLINE",
+  "taxi_on_duty": true|false,
+  "active_taxi": true,
   "topic": "ani/taxi/05654e1f-9f70-4f4e-80bb-47d4c83e0162",
   "location": {
     "type": "Point",

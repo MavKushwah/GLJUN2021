@@ -46,6 +46,7 @@ class DatabaseDriver:
             taxi_id = db[COL_TAXI].insert_one(taxi).inserted_id
             taxi_location_col = COL_LOC_HIST + '_' + str(taxi_id)
             db[taxi_location_col]
+            db[taxi_location_col].create_index([('location', '2dsphere')])
             taxi_location_document = {"updated_timestamp": taxi["updated_timestamp"],
                                       "location": taxi["location"],
                                       "taxi_on_duty": taxi["taxi_on_duty"],

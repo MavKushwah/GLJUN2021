@@ -56,6 +56,33 @@ and are explained in natural order of the numbering.
 4. *GeoSpatial Capable Database:* Houses data for whole system. It can be a DB or Persistent Cache that supports
    GeoSpatial queries. Possible candidates are MongoDb, ElastiCache or Redis Cache
 
+==== Deployment Model in AWS
+
+image::img/high_level_deployment.png[]
+
+- *Client:* Python Code that runs anywhere in the world and has access to the internet
+- *Lambda/Api Gateway:* Both of them are deployed using _CFN_. Lambda functions are deployed within the subnet
+- *MQTT Broker (EC2):* Deployed in the same _public subnet_ as Lambda Functions. Lambda functions can access this EC2
+    instance using private IP while _clients_ can access the Machine over Public Ip
+- *Mongo Atlas:* Deployed separately using Mongo Cloud Service. Lambda functions access Mongo using VPC Peering
+
+{nbsp}
+
+=== `CI-CD Model`
+
+For automated code build and deployment, we have used `make` system to automate code build and code deploy
+
+- Each developer uses a _namespace_ to have their personal stack
+- `make init` creates a _S3 Bucket_ and _MQTT EC2_ instance that can be shared among all
+- `make deploy` packages the code and uploads to the S3 Bucket on appropriate path(s). Same build artifacts are then
+  used for deploying stack using _Cloud Formation_
+
+To assist local development, there was a small flask app was written that can convert a HTTP request into a
+_AWS Api Gateway Proxy_ event and invoke the lambda function. This has helped a lot to debug issues with quick
+turnaround time.
+
+image::img/deployment_n_development.png[]
+
 {nbsp}
 
 === `API: User/Taxi Registration`
